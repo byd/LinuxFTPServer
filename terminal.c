@@ -12,7 +12,6 @@ int main(){
 	int i = sizeof(buf);
 
 	umask(0);
-	mkdir("tmp",S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH); //在当前目录下创建tmp文件夹
 
 	if(signal(SIGCHLD, sig_chld) == SIG_ERR)
 		msg("signal child halt register failed");
