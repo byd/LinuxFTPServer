@@ -3,30 +3,37 @@
 
 #define MAX_CMD_LEN 256 /*每次最大数据传输量 */ 
 #include "string.h"
-#include <netdb.h>
 #include "stdio.h"
 #include "msg.h"
+#include <netinet/in.h>
+#include <netdb.h>
+#include "setjmp.h"
+#include "signal.h"
+#include "sys/wait.h"
+#include "sys/stat.h"
 
-int sendCmd(int fd, char *cmd){
-	int len = 0;
-	if(fd == -1){
-		msg("连接尚未建立");
-		return;
-	}
-	len = send(fd, cmd, strlen(cmd), 0);
-	if(len == -1)
-		err_exit("send  cmd error, exit now", 1);
-	return len;
-}
+static jmp_buf env_alrm;
 
-int recvCmd(int fd, char *cmd){
-	int len = recv(fd, cmd, MAX_CMD_LEN, 0);
-	if (len ==-1) 
-		err_exit("recv出错！", 1);
-	if(!len)
-		msg("服务器传输结束");  // 当返回0时表示无可用消息，或传输已结束
-	
-	cmd[len] = '\0';
-	return len;
-}
+int sendCmd(int fd, char *cmd);
+
+int recvCmd(int fd, char *cmd);
+
+
+/*
+* 通过peer_fd通信，以被动模式连接并返回数据通道的sockfd
+*/
+int activeEnd(int peer_fd, struct sockaddr_in *remote_addr);
+
+/*
+* 连接服务器的port端口，返回与服务器建立的数据连接sockfd
+*/
+int passiveEnd(struct sockaddr_in *peer_addr);
+
+/*
+* 连接hostAddr:port的地址，返回一个socket描述符，地址信息保存到peer_addr中
+*/
+int CmdConnect(char *hostAddr, int port, struct sockaddr_in *peer_addr);
+
+static void sig_alarm();
+
 #endif

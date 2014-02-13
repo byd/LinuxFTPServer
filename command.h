@@ -11,22 +11,19 @@
  *       与数据连接进程的管道通信
  */
 #include "lib/msg.h"
-#include "signal.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
-#include "setjmp.h"
-#include <netinet/in.h>
-#include "sys/wait.h"
-#include "sys/stat.h"
+//#include <netinet/in.h>
 #include "unistd.h"
 #include "fcntl.h"
 #include <sys/socket.h>
 #include <sys/types.h>
+#include "lib/netcmd.h"
 /**
  * 接收用户发来的命令并做出响应，cmdFd是已连接的socket的fd
  */
-void CmdProcess(int *chldPid, int cmdFd);
+void CmdProcess(int *chldPid, int cmdFd, struct sockaddr_in peer_addr);
 
 
 /**
@@ -34,19 +31,6 @@ void CmdProcess(int *chldPid, int cmdFd);
  */
 void startDataProcess(int datafd, int cmdfd, int *pipe);
 
-/**
- * 选择一个高位端口打开，并监听客户连接请求，将该通道作为文件传输通道
- */
-int pasvMode(int client_fd);
-
-/**
- * 打开客户端发来的端口，将该通道作为文件传输通道
- */
-int portMode(int client_fd, int port);
-
-/**
- * 避免等待超时
- */
 static void sig_alarm();
 
 /*
@@ -58,9 +42,5 @@ static void sig_proc_exit();
  * 数据连接断开，回收其资源
  */
 static void sig_chld_halt();
-
-// 其他客户端命令
-extern int sendCmd(int fd, char *cmd);
-extern int recvCmd(int fd, char *cmd);
 
 #endif

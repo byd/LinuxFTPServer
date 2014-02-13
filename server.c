@@ -21,7 +21,6 @@ void FtpServe(){
 		
 		InitChldPidPool(); // 初始化子进程pid池
 
-		// 创建socket
 		if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) { 
 			err_exit("socket创建出错！",1);
 		}
@@ -35,7 +34,6 @@ void FtpServe(){
 		my_addr.sin_addr.s_addr = INADDR_ANY; 
 		bzero(&(my_addr.sin_zero),8); 
 
-	
 		// 将socket与地址绑定
 		if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) == -1) { 
 			err_exit("bind出错！",1); 
@@ -62,7 +60,7 @@ void FtpServe(){
 			}
 			printf("received a connection from %s\n", inet_ntoa(remote_addr.sin_addr)); 
 			p = getAvilablePid();
-			CmdProcess(p, client_fd);
+			CmdProcess(p, client_fd, remote_addr);
 		}
 
 		// while退出，服务进程作服务器的善后工作
