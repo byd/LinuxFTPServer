@@ -6,7 +6,7 @@ server : $(objs)
 	gcc -o server $(objs)
 
 daemon : $(daem)
-	gcc -o ftp_daemon $(daem)
+	gcc -o ftpdaemon $(daem)
 
 client : $(objc)
 	gcc -o client $(objc)
