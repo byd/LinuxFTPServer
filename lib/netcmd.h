@@ -2,6 +2,7 @@
 #define _NETCMD_H
 
 #define MAX_CMD_LEN 256 /*每次最大数据传输量 */ 
+#define DATA_BUF_SIZE 512
 #include "string.h"
 #include "stdio.h"
 #include "msg.h"
@@ -11,12 +12,23 @@
 #include "signal.h"
 #include "sys/wait.h"
 #include "sys/stat.h"
+#include "stdlib.h"
 
 static jmp_buf env_alrm;
 
 int sendCmd(int fd, char *cmd);
 
 int recvCmd(int fd, char *cmd);
+
+/**
+ * 从socket fd为dataFd的源读取数据，所有的数据存放在文件描述符为fd的文件中
+ */
+void RetriveFile(int dataFd, FILE* fp);
+
+/**
+  * 将文件名为filename的文件发送到dataFd的描述上
+  */
+void SendFile(int dataFd, char *filename);
 
 
 /*

@@ -3,9 +3,6 @@
 #define SERVPORT 3333 /*服务器监听端口号 */ 
 #define BACKLOG 10 /* 最大同时连接请求数 */ 
 
-extern int cid;
-int *chldPidPool; // 保存子进程pid的变量，可以分配和回收，方便对子进程进行管理
-int sockfd;
 
 void FtpServe(){
 	if((cid = fork()) < 0)

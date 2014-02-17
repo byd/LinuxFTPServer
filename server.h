@@ -10,6 +10,10 @@
 #include <stdio.h>
 #include <string.h>
 
+int cid;
+int *chldPidPool; // 保存子进程pid的变量，可以分配和回收，方便对子进程进行管理
+int sockfd;
+
 /**
  * ftp服务器的主进程，该进程监听21端口，并对客户端的连接响应，创建一个新的进程
  */

@@ -133,17 +133,11 @@ void startDataProcess(int datafd, int cmdfd, int *pp){
 	dataPid = fork();
 	if(dataPid == 0){
 		int len;
-		unsigned char *dataBuf, *cmdBuf;
-		FILE *fp;
+		char cmdBuf[MAX_CMD_LEN];
 
 		close(pp[1]); // 子进程关闭写端
-		dataBuf = (unsigned char*)malloc(sizeof(unsigned char)*(DATA_BUF_SIZE+8)); // 为databuf开辟多一些的空间
-		cmdBuf = (unsigned char*)malloc(sizeof(unsigned char)*MAX_CMD_LEN); 
-		if(dataBuf == NULL || cmdBuf == NULL)
-			err_exit("malloc data  or cmd buf failed", 1);
 
 		msg("数据进程启动，循环等待管道消息");
-
 		/**
 		 * 子进程接收并响应父命令进程的命令
 		 * 因为数据进程要么是读要么是写
@@ -156,61 +150,11 @@ void startDataProcess(int datafd, int cmdfd, int *pp){
 			printf("得到管道命令:%s\n", cmdBuf);
 			
 			if(cmdBuf[0] == '0'){ // 读服务器文件发送给数据端
-				struct stat filestat;
-				char temp[30];
-				int  cnt = 0;
-
-				if(strlen(cmdBuf+1) == 0){
-					msg("文件名不能为空");
-					continue;
-				}
-
-				FILE *fp = fopen(cmdBuf+1, "rb");
-				
-				if(fp == NULL){
-					msg("读文件打开失败");
-					continue;
-				}
-				if(stat(cmdBuf+1, &filestat) < 0) err_exit("获取文件大小失败", 1);
-				sprintf(temp, "%ld ", filestat.st_size);
-				printf("文件长度:%ld ", filestat.st_size);
-				if(send(datafd, temp, strlen(temp), 0) < 0)
-					err_exit("发送文件长度失败", 1);
-
-				while((len = fread(dataBuf, sizeof(unsigned char), DATA_BUF_SIZE, fp)) != 0){
-					if(send(datafd, dataBuf, len, 0) < 0)
-						err_exit("文件发送失败", 1);
-				}
-				msg("文件发送完成");
-				fclose(fp);
+				SendFile(datafd, cmdBuf+1);
 			}else if(cmdBuf[0] == '1'){// 将用户发来的文件写入到服务器
-				long filelength = -1, cnt = 0;
-				int index = 0;
-
 				FILE *fp = fopen(cmdBuf+1, "wb");
-				if(fp ==  NULL) msg("创建文件打开失败");
-
-				// 读文件，先读文件长度，只要长度足够就停止读取
-				while((len = recv(datafd, dataBuf, DATA_BUF_SIZE, 0)) != 0){
-					if(len < 0)
-						err_exit("接收文件出错", 1);
-					
-					dataBuf[len] = '\0'; //只是为了标记字符串结尾，不会写入到文件中
-
-					if(filelength == -1){ // 第一次读，先读出文件长度
-						while(index < 30 && dataBuf[index++] != ' ');
-						if(index == 30) err_exit("读取文件长度失败", 1);
-						sscanf(dataBuf, "%ld", &filelength);
-						len -= index;
-					}else 
-						index = 0;
-					printf("得到数据长度%d 内容:%s\n", len, dataBuf+index);
-					fwrite(dataBuf+index, sizeof(unsigned char), len, fp);
-					cnt += len;
-					if(cnt >= filelength)
-						break;
-				}
-				fclose(fp);
+				if(fp ==  NULL) msg("创建文件失败");
+				RetriveFile(datafd, fp);
 			}else if(cmdBuf[0] == '2'){ // 更改目录
 				if(chdir(cmdBuf+1) < 0)
 					msg("chdir failed");
@@ -221,8 +165,6 @@ void startDataProcess(int datafd, int cmdfd, int *pp){
 				continue;
 			}
 		}
-		free(dataBuf);
-		free(cmdBuf);
 		msg("数据传输监听进程结束");
 	}else if(dataPid > 0){
 		close(pp[0]); // 父进程关闭读端

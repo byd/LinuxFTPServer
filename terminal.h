@@ -11,6 +11,6 @@
 
 static void sig_chld();
 
-int cid = -1; //  child pid
+//extern int cid = -1; //  child pid
 
 #endif
