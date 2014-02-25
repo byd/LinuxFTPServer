@@ -11,7 +11,7 @@ int main(){
 	char buf[128] ; // 实现启动程序即启动服务进程
 	int i = sizeof(buf);
 
-	umask(0);
+	umask(0); // 设置文件创建掩码
 
 	if(signal(SIGCHLD, sig_chld) == SIG_ERR)
 		msg("signal child halt register failed");

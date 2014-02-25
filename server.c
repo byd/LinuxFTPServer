@@ -1,6 +1,6 @@
 #include "server.h"
 
-#define SERVPORT 3333 /*服务器监听端口号 */ 
+#define SERVPORT 20 /*服务器监听端口号 */ 
 #define BACKLOG 10 /* 最大同时连接请求数 */ 
 
 

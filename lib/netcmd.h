@@ -16,8 +16,15 @@
 
 static jmp_buf env_alrm;
 
+/*
+ *向文件描述符fd发送cmd命令
+ */
 int sendCmd(int fd, char *cmd);
 
+
+/*
+ *从文件描述符fd接收cmd命令
+ */
 int recvCmd(int fd, char *cmd);
 
 /**

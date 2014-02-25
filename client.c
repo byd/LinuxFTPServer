@@ -1,7 +1,7 @@
 #include "client.h"
 
 #define MAX_CMD_LEN 256 /*每次最大数据传输量 */ 
-#define SERVPORT 3333 
+#define SERVPORT 20 
 #define PASVMODE 1
 
 int  cmdFd=-1, dataFd=-1; // 客户端默认数据端口与命令端口相同
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]){
 				msg("服务器接收了命令，开始接收文件");
 				RetriveFile(dataFd, stdout); // 将dataFd发来的数据存入到stdout即终端输出上
 			}else
-				printf("ls error occur, server said:%s\n", buf);
+				printf("ls error occured, server said:%s\n", buf);
 		}else if(strcmp(cmd, "ls") == 0){ // 打印本地目录
 				system(buf);
 		}else if(strcmp(cmd, "cd") == 0){ // 进入目录
@@ -72,7 +72,7 @@ int main(int argc, char *argv[]){
 			if(recvCmd(cmdFd, buf)!=0 && strcmp(buf, "OK")==0){
 				printf("进入目录%s成功\n", arg);
 			}else
-				printf("cd error occur, server said:%s\n", buf);
+				printf("cd error occured, server said:%s\n", buf);
 		}else if(strcmp(cmd, "get") == 0){ // 获取服务器文件
 			strcpy(cmd, "GET ");
 			sendCmd(cmdFd, strcat(cmd, arg));
@@ -83,26 +83,25 @@ int main(int argc, char *argv[]){
 				RetriveFile(dataFd, newFp);
 				fclose(newFp);
 			}else
-				printf("getfile error occur, server said:%s\n", buf);
+				printf("getfile error occured, server said:%s\n", buf);
 		}else if(strcmp(cmd, "put") == 0){ // 上传文件
 			strcpy(cmd, "PUT ");
 			sendCmd(cmdFd, strcat(cmd, arg));
 			if(recvCmd(cmdFd, buf)!=0 && strcmp(buf, "OK")==0){
 				SendFile(dataFd, arg);
 			}else
-				printf("putfile error occur, server said:%s\n", buf);
+				printf("putfile error occured, server said:%s\n", buf);
 		}else if(strcmp(cmd, "del") == 0){ // 删除
 			strcpy(cmd, "DEL ");
 			sendCmd(cmdFd, strcat(cmd, arg));
 			if(recvCmd(cmdFd, buf)!=0 && strcmp(buf, "OK")==0){
-				printf("删除文件%s成功\n", arg);
+				printf("删除文件'%s'成功\n", arg);
 			}else
-				printf("del file error occur, server said:%s\n", buf);
+				printf("del file error occured, server said:%s\n", buf);
 		}else if(strcmp(cmd, "bye") == 0){ // 终止退出
 			close(dataFd);
 			close(cmdFd);
 			break;
-			//exit(0); // 主动退出
 		}else
 			msg("未能识别的命令");
 	}

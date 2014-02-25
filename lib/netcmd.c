@@ -2,13 +2,13 @@
 
 int sendCmd(int fd, char *cmd){
 	int len = 0;
-	if(fd == -1){
+	if(fd < 0){
 		msg("连接尚未建立");
-		return;
+		return -1;
 	}
 	len = send(fd, cmd, strlen(cmd), 0);
 	if(len == -1)
-		err_exit("send  cmd error, exit now", 1);
+		err_exit("send cmd error, exit now", 1);
 	return len;
 }
 
@@ -23,10 +23,6 @@ int recvCmd(int fd, char *cmd){
 	return len;
 }
 
-
-/**
-  * 读取名为filename的文件发送到dataFd上
-  */
 void SendFile(int dataFd, char *filename){
 	struct stat filestat;
 	char temp[30];
@@ -53,9 +49,6 @@ void SendFile(int dataFd, char *filename){
 	fclose(fp);
 }
 
-/**
- * 从socket fd为dataFd的源读取数据，所有的数据存放在文件描述符为fd的文件中
- */
 void RetriveFile(int dataFd, FILE* fp){
 	unsigned char *dataBuf;
 	long len, filelength=-1, cnt=0;
