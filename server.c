@@ -19,7 +19,7 @@ void FtpServe(){
 		InitChldPidPool(); // 初始化子进程pid池
 
 		if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) { 
-			err_exit("socket创建出错！",1);
+			err_exit("socket create failed",1);
 		}
 	
 		// 将socket设置为可以重复使用，这个很有必要，不然就会出现调试过程中无法绑定端口的问题
@@ -33,12 +33,12 @@ void FtpServe(){
 
 		// 将socket与地址绑定
 		if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) == -1) { 
-			err_exit("bind出错！",1); 
+			err_exit("bind error",1); 
 		}
 	
 		// 监听端口
 		if (listen(sockfd, BACKLOG) == -1) { 
-			err_exit("listen出错！",1); 
+			err_exit("listen error",1); 
 		}
 
 		// 响应信号
@@ -52,7 +52,7 @@ void FtpServe(){
 		while(1){
 			sin_size = sizeof(struct sockaddr_in); 
 			if ((client_fd = accept(sockfd, (struct sockaddr *)&remote_addr, &sin_size)) == -1) {
-				printf("accept出错"); 
+				printf("accept error"); 
 				continue;  // 如果连接过多，在这里会直接跳过
 			}
 			printf("received a connection from %s\n", inet_ntoa(remote_addr.sin_addr)); 
@@ -71,7 +71,7 @@ void FtpServe(){
 static void sig_chld_exit(){
 	int wid = wait(NULL);
 	int i;
-	printf("ftpserve函数wait得到退出命令进程id=%d\n", wid);
+	//printf("ftpserve函数wait得到退出命令进程id=%d\n", wid);
 	for(i=0; i<BACKLOG; i++)
 		if(chldPidPool[i] == wid)
 			chldPidPool[i] = -1;
@@ -80,7 +80,7 @@ static void sig_chld_exit(){
 // 主动向所有子进程发送结束信号
 static void sig_close_server(){
 	int i;
-	msg("正在注销所有程序");
+	msg("shuting down all process...");
 	for (i = 0; i < BACKLOG; ++i)
 	{
 		if(chldPidPool[i] != -1)

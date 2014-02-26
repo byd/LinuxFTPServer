@@ -33,7 +33,7 @@ int main(){
 			continue;
 		else if(strcmp(buf, "start") == 0){
 			if(cid != -1)
-				printf("当前正在运行, pid=%d\n", cid);
+				printf("Server is Running, pid=%d\n", cid);
 			else
 				FtpServe();
 		}else if(strcmp(buf, "stop") == 0){
@@ -47,13 +47,13 @@ int main(){
 			while(cid != -1) sleep(1); // wait for child process to terminate
 			break;
 		}else
-			msg("未能识别的命令");
+			msg("Unrecognized Command");
 
 	}
 	msg("bye");
 }
 
 static void sig_chld(){
-	printf("子进程退出, 原id=%d,waitid=%d\n", cid, wait(NULL));
+	printf("Child process exit, origin id=%d,waitid=%d\n", cid, wait(NULL));
 	cid = -1;
 }

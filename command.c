@@ -33,9 +33,9 @@ void CmdProcess(int *chldPid, int cmdFd, struct sockaddr_in peer_addr){
 
 		while(1){
 			if ((recvBytes=recv(cmdFd, buf, MAX_CMD_LEN, 0)) ==-1)
-				err_exit("recv出错！", 1);
+				err_exit("recv error", 1);
 			if(recvBytes == 0){ //无可用消息或传输已经结束，则返回的是0
-				msg("连接已断开");
+				msg("Connection Broken Down");
 				if(dataPid>0)  // 不要乱杀进程!
 					kill(dataPid, SIGKILL);
 				break;
@@ -54,14 +54,14 @@ void CmdProcess(int *chldPid, int cmdFd, struct sockaddr_in peer_addr){
 				datafd = passiveEnd(&peer_addr);
 
 				if(datafd < 0){
-					printf("主动模式连接失败，请输入PRT 'port'或PASV, errno=%d\n", datafd);
+					printf("Active mode connection failed, input [PRT 'port'] or [PASV], errno=%d\n", datafd);
 					continue;
 				}
 				startDataProcess(datafd, cmdFd, pp);
 			}else if(strcmp(cmd, "PASV") == 0){ // 服务器打开商品监听
 				datafd = activeEnd(cmdFd, &peer_addr);
 				if(datafd < 0){
-					printf("被动模式连接失败，请尝试PRT 'port'或PASV, errno=%d\n", datafd);
+					printf("passive mode connection failed, input [PRT 'port'] or [PASV], errno=%d\n", datafd);
 					continue;
 				}
 				startDataProcess(datafd, cmdFd, pp);
@@ -118,7 +118,7 @@ void CmdProcess(int *chldPid, int cmdFd, struct sockaddr_in peer_addr){
 		}
 		close(cmdFd);
 		unlink(filename);
-		printf("命令子进程终止, pid=%d\n", getpid());
+		printf("CMD process terminated, pid=%d\n", getpid());
 		exit(0);
 	}
 }
@@ -137,7 +137,7 @@ void startDataProcess(int datafd, int cmdfd, int *pp){
 
 		close(pp[1]); // 子进程关闭写端
 
-		msg("数据进程启动，循环等待管道消息");
+		msg("Cmd process started, waiting for pipe cmd");
 		/**
 		 * 子进程接收并响应父命令进程的命令
 		 * 因为数据进程要么是读要么是写
@@ -147,13 +147,13 @@ void startDataProcess(int datafd, int cmdfd, int *pp){
 		while(1){
 			len = read(pp[0], cmdBuf, MAX_CMD_LEN);
 			cmdBuf[len] = '\0';
-			printf("得到管道命令:%s\n", cmdBuf);
+			printf("receiving pipe cmd :%s\n", cmdBuf);
 			
 			if(cmdBuf[0] == '0'){ // 读服务器文件发送给数据端
 				SendFile(datafd, cmdBuf+1);
 			}else if(cmdBuf[0] == '1'){// 将用户发来的文件写入到服务器
 				FILE *fp = fopen(cmdBuf+1, "wb");
-				if(fp ==  NULL) msg("创建文件失败");
+				if(fp ==  NULL) msg("file create failed");
 				RetriveFile(datafd, fp);
 			}else if(cmdBuf[0] == '2'){ // 更改目录
 				if(chdir(cmdBuf+1) < 0)
@@ -161,11 +161,11 @@ void startDataProcess(int datafd, int cmdfd, int *pp){
 			}else if(cmdBuf[0] == '3'){ // 退出进程
 				break;
 			}else{
-				msg("管道命令出错!");
+				msg("pipe cmd error");
 				continue;
 			}
 		}
-		msg("数据传输监听进程结束");
+		msg("data process exit");
 	}else if(dataPid > 0){
 		close(pp[0]); // 父进程关闭读端
 	}else

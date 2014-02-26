@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
 
 	// 数据连接
 	if((cmdFd = CmdConnect(hostAddr, SERVPORT, &peer_addr)) < 0)
-		err_exit("cmdFd连接失败", cmdFd);
+		err_exit("Command Porcess Connection failed", cmdFd);
 
 	if(PASVMODE){  // 被动模式
 		char temp[50], temp1[10];
@@ -32,10 +32,10 @@ int main(int argc, char *argv[]){
 			sscanf(temp, "%s%d", temp1, &port);
 		peer_addr.sin_port = htons(port); // 连接该端口
 		if((dataFd = passiveEnd(&peer_addr)) < 0)
-			err_exit("被动连接模式失败", dataFd);
+			err_exit("Pasv mode connection failed", dataFd);
 	}else{ // 主动模式
 		if((dataFd = activeEnd(cmdFd, &peer_addr)) < 0)
-			err_exit("主动模式连接失败", dataFd);
+			err_exit("Active mode connection failed", dataFd);
 	}
 	
 	while(1){ 
@@ -60,7 +60,7 @@ int main(int argc, char *argv[]){
 		else if(strcmp(cmd, "dir") == 0){ // 打印服务器的当前目录
 			sendCmd(cmdFd, "DIR"); // 数据连接必须已经建立
 			if(recvCmd(cmdFd, buf)!=0 && strcmp(buf, "OK")==0){
-				msg("服务器接收了命令，开始接收文件");
+				msg("OK, Receiving data....");
 				RetriveFile(dataFd, stdout); // 将dataFd发来的数据存入到stdout即终端输出上
 			}else
 				printf("ls error occured, server said:%s\n", buf);
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]){
 			strcpy(cmd, "CD ");
 			sendCmd(cmdFd, strcat(cmd, arg));
 			if(recvCmd(cmdFd, buf)!=0 && strcmp(buf, "OK")==0){
-				printf("进入目录%s成功\n", arg);
+				printf("cd to %s OK\n", arg);
 			}else
 				printf("cd error occured, server said:%s\n", buf);
 		}else if(strcmp(cmd, "get") == 0){ // 获取服务器文件
@@ -79,8 +79,9 @@ int main(int argc, char *argv[]){
 			if(recvCmd(cmdFd, buf)!=0 && strcmp(buf, "OK")==0){
 				FILE *newFp = fopen(arg, "wb");
 				if(newFp == NULL)
-					err_exit("文件创建失败", 1);
+					err_exit("create file error", 1);
 				RetriveFile(dataFd, newFp);
+				msg("Get File OK");
 				fclose(newFp);
 			}else
 				printf("getfile error occured, server said:%s\n", buf);
@@ -95,7 +96,7 @@ int main(int argc, char *argv[]){
 			strcpy(cmd, "DEL ");
 			sendCmd(cmdFd, strcat(cmd, arg));
 			if(recvCmd(cmdFd, buf)!=0 && strcmp(buf, "OK")==0){
-				printf("删除文件'%s'成功\n", arg);
+				printf("delete file '%s' OK\n", arg);
 			}else
 				printf("del file error occured, server said:%s\n", buf);
 		}else if(strcmp(cmd, "bye") == 0){ // 终止退出
@@ -103,7 +104,7 @@ int main(int argc, char *argv[]){
 			close(cmdFd);
 			break;
 		}else
-			msg("未能识别的命令");
+			msg("Unrecognized Command");
 	}
 	msg("bye bye");
 }
